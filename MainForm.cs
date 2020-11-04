@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Data.SqlClient;
+using System.Runtime.InteropServices;
 using QuanLyQuanCafe.DAO;
 using QuanLyQuanCafe.DTO;
 using static System.Windows.Forms.ListViewItem;
@@ -28,6 +29,14 @@ namespace QuanLyQuanCafe
 		public MainForm(Account account)
 		{
 			InitializeComponent();
+			this.ControlBox = false;
+			this.Text = String.Empty;
+			pnlInfo.Paint += DrawBorder;
+			pnlInfo.Visible = false;
+			btnAdmin.Enabled = false;
+			this.btnClose.Paint += DrawCloseButton;
+			this.btnMax.Paint += DrawMaxButton;
+			this.btnMin.Paint += DrawMinButton;
 			LoadTable();
 			LoadCategory();
 			LoadCbTable(cbSwitchTable);
@@ -36,15 +45,12 @@ namespace QuanLyQuanCafe
 
 		private void thongTinCaNhanToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			using (AccountForm accountForm = new AccountForm(Account))
-			{
-				accountForm.ShowDialog();
-			}
+			
 		}
 
 		private void adminToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			adminForm.ShowDialog();
+			
 		}
 
 		private void LoadTable()
@@ -54,19 +60,27 @@ namespace QuanLyQuanCafe
 			foreach(Table item in listTable)
 			{
 				Button btn = new Button() { Width = 100, Height = 100 };
+				btn.FlatStyle = FlatStyle.Flat;
+				btn.BackColor = Color.White;
+				btn.ForeColor = Color.Black;
+				btn.FlatAppearance.BorderSize = 1;
+				btn.FlatAppearance.BorderColor = Color.MediumBlue;
 				btn.Click += Btn_Click;
 				btn.Tag = item;
 				btn.Text = item.Name + "\n" + item.Status;
 				switch(item.Status)
 				{
 					case "Empty":
-						btn.BackColor = Color.Aqua;
+						btn.BackColor = Color.White;
+						btn.ForeColor = Color.Black;
 						break;
 					case "Using":
-						btn.BackColor = Color.Red;
+						btn.BackColor = Color.IndianRed;
+						btn.ForeColor = Color.White;
 						break;
 					default:
-						btn.BackColor = Color.Aqua;
+						btn.BackColor = Color.White;
+						btn.ForeColor = Color.Black;
 						break;
 				}
 				pnlTable.Controls.Add(btn);
@@ -175,6 +189,89 @@ namespace QuanLyQuanCafe
 				TableDAO.SwitchTable(id1, id2);
 				LoadTable();
 			}
+		}
+
+		private void dangXuatToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			
+		}
+
+		private void DrawCloseButton(object sender, PaintEventArgs e)
+		{
+			e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+			e.Graphics.DrawLine(new Pen(Color.Black, 0.5f), 15, 8, 24, 17);
+			e.Graphics.DrawLine(new Pen(Color.Black, 0.5f), 15, 17, 24, 8);
+		}
+
+		private void DrawMaxButton(object sender, PaintEventArgs e)
+		{
+			e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+			e.Graphics.DrawLine(new Pen(Color.Black, 1f), 15, 8, 24, 8);
+			e.Graphics.DrawLine(new Pen(Color.Black, 1f), 15, 8, 15, 17);
+			e.Graphics.DrawLine(new Pen(Color.Black, 1f), 24, 8, 24, 17);
+			e.Graphics.DrawLine(new Pen(Color.Black, 1f), 15, 17, 24, 17);
+		}
+
+		private void DrawMinButton(object sender, PaintEventArgs e)
+		{
+			e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+			e.Graphics.DrawLine(new Pen(Color.Black, 1f), 14, 13, 25, 13);
+		}
+
+		[DllImport("user32.DLL", EntryPoint = "ReleaseCapture")]
+		private extern static void ReleaseCapture();
+		[DllImport("user32.DLL", EntryPoint = "SendMessage")]
+		private extern static void SendMessage(System.IntPtr hWnd, int wMsg, int wParam, int lParam);
+
+		private void pnlTitle_MouseDown(object sender, MouseEventArgs e)
+		{
+			ReleaseCapture();
+			SendMessage(this.Handle, 0x112, 0xf012, 0);
+		}
+
+		private void btnMin_Click(object sender, EventArgs e)
+		{
+			this.WindowState = FormWindowState.Minimized;
+		}
+
+		private void btnClose_Click(object sender, EventArgs e)
+		{
+			Application.Exit();
+		}
+
+		private void btnAdmin_Click(object sender, EventArgs e)
+		{
+			adminForm.ShowDialog();
+		}
+
+		private void button2_Click(object sender, EventArgs e)
+		{
+			if (pnlInfo.Visible == true)
+			{
+				pnlInfo.Visible = false;
+			}
+			else
+			{
+				pnlInfo.Visible = true;
+			}
+		}
+
+		private void lbAccount_Click(object sender, EventArgs e)
+		{
+			using (AccountForm accountForm = new AccountForm(Account))
+			{
+				accountForm.ShowDialog();
+			}
+		}
+
+		private void lbLogout_Click(object sender, EventArgs e)
+		{
+			this.Close();
+		}
+
+		private void DrawBorder(object sender, PaintEventArgs e)
+		{
+			e.Graphics.DrawRectangle(new Pen(Color.Blue, 2f), this.DisplayRectangle);
 		}
 	}
 }
